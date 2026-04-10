@@ -1,20 +1,23 @@
 :root {
-  --background: #0f1115;
-  --foreground: #e2e8f0;
-  
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-highlight: rgba(255, 255, 255, 0.15);
-  
-  --accent-primary: #3b82f6;
-  --accent-secondary: #8b5cf6;
-  --accent-danger: #ef4444;
-  --accent-success: #10b981;
-  --accent-warning: #f59e0b;
+  /* Target macOS M1 desktop feel (layout centered for 2560px wide screens)
+     Color palette: warm, vibrant, no purple/blue gradients */
+  --background: #0b1020; /* near-black but warmer */
+  --foreground: #f6f7fb;
 
-  --border-radius: 16px;
-  --border-radius-sm: 8px;
-  --border-radius-lg: 24px;
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-highlight: rgba(255, 255, 255, 0.12);
+
+  /* Warm & energetic accents (avoid purple/blue) */
+  --accent-primary: #ff6b35; /* vivid orange */
+  --accent-secondary: #ffca3a; /* warm yellow */
+  --accent-danger: #ff4d4f; /* red */
+  --accent-success: #16a34a; /* green */
+  --accent-teal: #14b8a6; /* teal for variety */
+
+  --border-radius: 14px;
+  --border-radius-sm: 10px;
+  --border-radius-lg: 28px;
 }
 
 * {
@@ -29,8 +32,11 @@ body {
   overflow-x: hidden;
   background-color: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  /* Sora from Google Fonts — modern, friendly, good for bold UI */
+  font-family: 'Sora', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 a {
@@ -58,8 +64,9 @@ input, textarea, select {
 }
 
 input:focus, textarea:focus, select:focus {
-  border-color: var(--accent-primary);
+  border-color: var(--accent-teal);
   background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 6px 20px rgba(20, 184, 166, 0.08);
 }
 
 .glass-panel {
@@ -98,8 +105,10 @@ input:focus, textarea:focus, select:focus {
 
 .btn-primary {
   background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  color: #0b1020;
+  box-shadow: 0 12px 30px rgba(255, 107, 53, 0.14);
+  font-weight: 700;
+  letter-spacing: 0.2px;
 }
 
 .btn-primary:hover {
@@ -129,9 +138,161 @@ input:focus, textarea:focus, select:focus {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #60a5fa, #c084fc);
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-fill-color: transparent;
+  font-weight: 800;
+}
+
+/* app title: larger and forced white to be highly visible in header */
+.app-title {
+  font-size: 36px;
+  font-weight: 900;
+  color: #ffffff !important;
+  /* override gradient text clipping so the title appears white */
+  background: none !important;
+  background-clip: unset !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Desktop centered container tuned for Mac M1 (2560x1600). */
+.app-shell {
+  width: min(2200px, 92vw);
+  margin: 28px auto;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.app-header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 22px;
+  border-radius: var(--border-radius);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+/* header-nav was removed in favor of the sidebar navigation */
+
+/* header-nav pills for top-left dashboard-style navigation */
+/* header-nav pills for top-left dashboard-style navigation (removed) */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  min-height: calc(100vh - 96px);
+  align-self: start;
+}
+
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar .nav-item {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  color: var(--foreground);
+  transition: background 160ms ease, transform 160ms ease;
+}
+
+.sidebar .nav-item:hover {
+  transform: translateX(4px);
+  background: rgba(255,255,255,0.02);
+}
+
+.sidebar .nav-item.active {
+  background: linear-gradient(90deg, rgba(255,107,53,0.12), rgba(255,202,58,0.06));
+  box-shadow: inset 0 -1px 0 rgba(255,255,255,0.02);
+}
+
+.content {
+  padding: 18px 22px;
+  border-radius: var(--border-radius);
+}
+
+/* Make the overall page more colorful with a subtle radial gradient */
+body {
+  background: radial-gradient(1200px 600px at 10% 10%, rgba(255,107,53,0.06), transparent 8%), radial-gradient(1000px 500px at 90% 80%, rgba(255,202,58,0.04), transparent 10%), var(--background);
+}
+
+/* Card hover: scale and elevate, show overlay info */
+/* Only affect panels inside the main card grid so header/sidebar panels are unaffected */
+.bento-grid .glass-panel {
+  position: relative;
+  transition: transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms ease, border-color 220ms ease, background 220ms ease;
+  transform-origin: center;
+  will-change: transform;
+}
+.bento-grid .glass-panel:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 40px 80px rgba(11,16,32,0.55);
+  z-index: 40;
+}
+
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  /* stronger overlay to fully obscure base content when visible */
+  background: linear-gradient(180deg, rgba(11,16,32,0.95), rgba(11,16,32,0.9));
+  color: var(--foreground);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+  transform: translateY(6px);
+  border-radius: inherit;
+}
+
+/* Only the hovered panel should reveal its overlay */
+.bento-grid .glass-panel:hover .card-overlay {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  z-index: 60; /* stay on top of other panels */
+}
+
+/* when hovered, fade the base content so the overlay reads clearly */
+.bento-grid .glass-panel .card-base {
+  transition: opacity 180ms ease, transform 220ms ease;
+}
+.bento-grid .glass-panel .card-base {
+  transition: opacity 180ms ease, transform 220ms ease;
+}
+.bento-grid .glass-panel:hover .card-base {
+  opacity: 0.02; /* nearly hidden to avoid text conflict */
+  transform: scale(0.995);
+}
+
+/* ensure non-hovered cards don't get affected by sibling hover */
+.bento-grid:hover .glass-panel:not(:hover) {
+  transform: none;
+  box-shadow: none;
+  opacity: 0.98;
+}
+
+.card-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.75rem;
 }

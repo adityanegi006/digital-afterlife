@@ -42,5 +42,10 @@ const defaultData: VaultSchema = {
 
 export async function getDb() {
   const db = await JSONFilePreset<VaultSchema>(dbFile, defaultData);
+  // ensure loaded db has all keys from defaultData
+  db.data = {
+    ...defaultData,
+    ...(db.data || {}),
+  } as VaultSchema;
   return db;
 }

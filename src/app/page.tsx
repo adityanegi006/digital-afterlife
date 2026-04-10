@@ -7,7 +7,9 @@ import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const [guardianMode, setGuardianMode] = useState(false);
+  const [totals, setTotals] = useState({ assets: 0, documents: 0, insurance: 0, dependents: 0 });
   const router = useRouter();
+  
 
   useEffect(() => {
     if (localStorage.getItem("vault_auth") !== "true") {
@@ -17,37 +19,37 @@ export default function Home() {
     fetch('/api/guardian')
       .then(res => res.json())
       .then(data => setGuardianMode(data.guardianMode));
-  }, [router]);
 
-  const handleLockVault = () => {
-    localStorage.removeItem("vault_auth");
-    router.push("/signup");
-  };
+    // fetch vault totals
+    fetch('/api/vault/export')
+      .then(r => r.json())
+      .then(data => {
+        setTotals({
+          assets: (data.assets || []).length,
+          documents: (data.documents || []).length,
+          insurance: (data.insurance || []).length,
+          dependents: (data.dependents || []).length,
+        });
+      }).catch(() => {});
+  }, []);
 
+  // multi-sig modal state and signatures
   const [showMultiSig, setShowMultiSig] = useState(false);
-  const [sig1, setSig1] = useState('');
-  const [sig2, setSig2] = useState('');
-
-  const toggleGuardianMode = async () => {
-    const res = await fetch('/api/guardian', { method: 'POST' });
-    const data = await res.json();
-    setGuardianMode(data.guardianMode);
-  };
+  const [sig1, setSig1] = useState("");
+  const [sig2, setSig2] = useState("");
 
   const initiateSwitch = () => {
-    if (guardianMode) {
-      toggleGuardianMode();
-    } else {
-      setShowMultiSig(true);
-    }
+    setShowMultiSig(true);
+  };
+
+  const handleLockVault = () => {
+    localStorage.removeItem('vault_auth');
+    router.push('/signup');
   };
 
   const executeMultiSigSwitch = () => {
-    if (sig1.length < 4 || sig2.length < 4) return alert('Both authorized Guardians must enter their cryptographic PINs to unlock the vault.');
     setShowMultiSig(false);
-    setSig1('');
-    setSig2('');
-    toggleGuardianMode();
+    setGuardianMode(prev => !prev);
   };
 
   const handleEjectVault = async () => {
@@ -70,7 +72,7 @@ export default function Home() {
           <p style={{ opacity: 0.7, fontSize: '1.2rem' }}>Digital Estate & Bereavement Orchestrator</p>
         </div>
         
-        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+  <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           <div>
             <p style={{ fontSize: '0.8rem', opacity: 0.7, marginBottom: '0.2rem', textTransform: 'uppercase', letterSpacing: '1px' }}>System Status</p>
             <p style={{ fontWeight: 600, color: guardianMode ? 'var(--accent-danger)' : 'var(--accent-success)' }}>
@@ -114,31 +116,36 @@ export default function Home() {
           href="/vault/documents" 
           title="Important Docs" 
           desc="Wills, Deeds, and IDs" 
-          icon={<FileText size={32} color="var(--accent-primary)" />} 
+          icon={<FileText size={32} color="#ffca3a" />} 
+          badge={totals.documents}
         />
         <BentoCard 
           href="/vault/medical" 
           title="Medical Data" 
           desc="History & Contacts" 
           icon={<Heart size={32} color="var(--accent-danger)" />} 
+          badge={0}
         />
         <BentoCard 
           href="/vault/insurance" 
           title="Insurance Center" 
           desc="Policies & Claims" 
           icon={<Shield size={32} color="var(--accent-success)" />} 
+          badge={totals.insurance}
         />
         <BentoCard 
           href="/vault/assets" 
           title="Asset Ledger" 
           desc="Stocks, Crypto, Bank" 
-          icon={<Landmark size={32} color="var(--accent-warning)" />} 
+          icon={<Landmark size={32} color="var(--accent-teal)" />} 
+          badge={totals.assets}
         />
         <BentoCard 
           href="/vault/digital" 
           title="Digital Footprint" 
           desc="Subscriptions & Socials" 
-          icon={<LinkIcon size={32} color="var(--accent-secondary)" />} 
+          icon={<LinkIcon size={32} color="#ff6b35" />} 
+          badge={0}
         />
         <BentoCard 
           href="/vault/capsule" 
@@ -202,23 +209,36 @@ export default function Home() {
   );
 }
 
-function BentoCard({ href, title, desc, icon, isAi = false }: { href: string; title: string; desc: string; icon: React.ReactNode; isAi?: boolean }) {
+function BentoCard({ href, title, desc, icon, isAi = false, badge }: { href: string; title: string; desc: string; icon: React.ReactNode; isAi?: boolean; badge?: number }) {
   return (
     <Link href={href}>
       <div className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', height: '240px', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
         {isAi && (
-          <div style={{ position: 'absolute', top: 0, right: 0, padding: '6px 16px', background: 'linear-gradient(135deg, #8b5cf6, #3b82f6)', fontSize: '0.75rem', fontWeight: 'bold', borderBottomLeftRadius: '12px' }}>
+          <div style={{ position: 'absolute', top: 0, right: 0, padding: '6px 16px', background: 'linear-gradient(90deg, var(--accent-primary), var(--accent-secondary))', fontSize: '0.75rem', fontWeight: 'bold', borderBottomLeftRadius: '12px' }}>
             GROQ AI API
           </div>
         )}
+        {typeof badge === 'number' && (
+          <div className="card-badge" style={{ background: 'linear-gradient(90deg, rgba(255,107,53,0.95), rgba(255,202,58,0.95))', color: '#071022' }}>{badge}</div>
+        )}
+
         <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '50%', width: 'min-content' }}>
           {icon}
         </div>
         <div style={{ marginTop: 'auto' }}>
           <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', fontWeight: 600 }}>{title}</h2>
-          <p style={{ opacity: 0.7, fontSize: '0.9rem' }}>{desc}</p>
+          <p style={{ opacity: 0.8, fontSize: '0.95rem' }}>{desc}</p>
+        </div>
+
+        <div className="card-overlay">
+          <div style={{ textAlign: 'center' }}>
+            <h3 style={{ marginBottom: '0.5rem', fontSize: '1.15rem' }}>{title}</h3>
+            <p style={{ opacity: 0.9, marginBottom: '0.75rem' }}>{desc}</p>
+            <p style={{ opacity: 0.7, fontSize: '0.9rem' }}>Click to open the full {title.toLowerCase()} area. Hover or click for quick actions.</p>
+          </div>
         </div>
       </div>
     </Link>
   );
 }
+
